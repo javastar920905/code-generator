@@ -49,7 +49,7 @@ import lombok.Setter;
 public class GeneratorConfig {
 
     /**
-     * 本配置的名称
+     * 本配置的名称  命名建议 公司_项目_模块
      */
     private String name;
 
@@ -71,9 +71,11 @@ public class GeneratorConfig {
 
     private String mappingXMLTargetFolder;
 
+    //数据库表名称
     private String tableName;
 
 
+    //类名
     private String domainObjectName;
 
     private boolean offsetLimit;
