@@ -23,6 +23,7 @@
         - cnpm install 
         - cnpm run build 把 dist 目录文件放入 generator/src/main/resources/templates中即可
     - 引入 iview ui 组件,最近项目中刚好在用,就不换了 
+    - 引入 swagger 文档 http://localhost:8080/swagger-ui.html
     
 - [ ] 代码复用,移植
 - [ ] 前端页面布局

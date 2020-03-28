@@ -8,6 +8,8 @@ import cn.javabus.generator.util.DbUtil;
 import cn.javabus.generator.util.Result;
 import cn.javabus.generator.util.ThreadLocalUtil;
 import com.jcraft.jsch.Session;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import org.apache.commons.io.FileUtils;
@@ -26,7 +28,9 @@ import java.util.Optional;
 
 /**
  * @author ou.zhenxing on 2020-03-28.
+ *
  */
+@Api(tags = "生成代码管理")
 @RestController
 @RequestMapping("generator")
 public class GeneratorController {
@@ -42,6 +46,7 @@ public class GeneratorController {
     /**
      * 生成代码
      */
+    @ApiOperation("生成代码")
     @PostMapping("generateCode")
     public Result generateCode(GeneratorConfig config) {
         if (config == null || StringUtils.isEmpty(config.getTableName())) {
@@ -80,6 +85,7 @@ public class GeneratorController {
      * 保存当前代码生成配置信息 命名建议 公司_项目_模块
      */
     @PostMapping("saveConfig")
+    @ApiOperation("保存当前代码生成配置信息 命名建议 公司_项目_模块")
     public Result saveGeneratorConfig(GeneratorConfig generatorConfig) {
         if (generatorConfig == null) {
             return Result.fail("参数不能为空");
@@ -106,6 +112,7 @@ public class GeneratorController {
      * @return
      */
     @GetMapping("getConfigList")
+    @ApiOperation("加载配置列表")
     public Result getGeneratorConfig(GeneratorConfig generatorConfig) {
         try {
             List<GeneratorConfig> configs = ConfigHelper.loadGeneratorConfigs();
@@ -122,6 +129,7 @@ public class GeneratorController {
      * @return
      */
     @GetMapping("getConfig")
+    @ApiOperation("点击应用名称加载  生成配置")
     public Result getGeneratorConfig(@RequestParam String generatorConfigName) {
         try {
             GeneratorConfig generatorConfig = ConfigHelper.loadGeneratorConfig(generatorConfigName);

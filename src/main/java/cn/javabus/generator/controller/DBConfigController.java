@@ -6,6 +6,8 @@ import cn.javabus.generator.util.DbUtil;
 import cn.javabus.generator.util.Result;
 import cn.javabus.generator.util.ThreadLocalUtil;
 import com.jcraft.jsch.Session;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import javafx.concurrent.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,6 +23,7 @@ import java.util.List;
  *
  * @author ou.zhenxing on 2020-03-28.
  */
+@Api(tags = "数据库连接配置 管理")
 @RestController
 @RequestMapping("/DBConfig")
 public class DBConfigController {
@@ -32,6 +35,7 @@ public class DBConfigController {
      * @return
      */
     @GetMapping("getDBConfigList")
+    @ApiOperation(" 加载数据库连接列表 (前端自动取得当前数据库连接)")
     public Result getDBConfigList() {
         try {
             List<DatabaseConfig> dbConfigs = ConfigHelper.loadDatabaseConfig();
@@ -60,6 +64,7 @@ public class DBConfigController {
      *
      * @return
      */
+    @ApiOperation("根据选中数据库配置,创建数据库连接,加载数据库表列表")
     @GetMapping("getTablesByDBConfig")
     public Result getTablesByDBConfig(@RequestParam String dBConfigName) {
         try {

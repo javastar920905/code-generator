@@ -1,5 +1,10 @@
 package cn.javabus.generator.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by Owen on 5/13/16.
  * <p>
@@ -11,34 +16,45 @@ package cn.javabus.generator.model;
  * port = "3306"
  * schema = "article"
  * username = "apple"
- * password = "X0dxeLpK"
+ * password = ""
  * encoding = "utf8"
  */
+@ApiModel
+@Getter
+@Setter
 public class DatabaseConfig {
     //tcp/ip 连接或者 ssh 方式连接
+    @ApiModelProperty("tcp/ip 连接或者 ssh 方式连接 true/false")
     private Boolean isOverssh = false;
     private Boolean isUpdate = false;
     /**
      * The primary key in the sqlite db
      */
+    @ApiModelProperty("The primary key in the sqlite db")
     private Integer id;
 
+    @ApiModelProperty("MySQL")
     private String dbType;
     /**
      * The name of the config
      */
+    @ApiModelProperty("The name of the config")
     private String name;
-
+    @ApiModelProperty("dbserver")
     private String host;
 
+    @ApiModelProperty("3306")
     private String port;
 
+    @ApiModelProperty("数据库名 article_dev")
     private String schema;
 
+    @ApiModelProperty("数据库登录名 apple")
     private String username;
 
     private String password;
 
+    @ApiModelProperty("utf8")
     private String encoding;
 
     private String lport;
