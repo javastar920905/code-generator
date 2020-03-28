@@ -27,23 +27,15 @@
         <Layout>
             <Header>
                 <Menu mode="horizontal" theme="dark" active-name="1">
-                    <div class="layout-logo"></div>
+                    <div class="layout-logo"><img src="../assets/logo.png" height="30" width="30"/></div>
                     <div class="layout-nav">
                         <MenuItem name="1">
-                            <Icon type="ios-navigate"></Icon>
-                            Item 1
+                            <Icon type="md-add-circle" />
+                            新建数据库连接
                         </MenuItem>
                         <MenuItem name="2">
-                            <Icon type="ios-keypad"></Icon>
-                            Item 2
-                        </MenuItem>
-                        <MenuItem name="3">
-                            <Icon type="ios-analytics"></Icon>
-                            Item 3
-                        </MenuItem>
-                        <MenuItem name="4">
-                            <Icon type="ios-paper"></Icon>
-                            Item 4
+                            <Icon type="ios-paper-outline" />
+                            配置
                         </MenuItem>
                     </div>
                 </Menu>
@@ -93,7 +85,11 @@
     </div>
 </template>
 <script>
+    import DBConfig from './DBConfig'
     export default {
+        component:{
+            DBConfig
+        }
 
     }
 </script>

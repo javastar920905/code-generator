@@ -7,12 +7,12 @@
 
 <script>
 // import HelloWorld from './components/HelloWorld.vue'
-import Layout from './components/Layout'
+import Layout from './pages/Layout'
 
 export default {
   name: 'App',
   components: {
-    Layout,
+    Layout
   }
 }
 </script>
@@ -21,5 +21,6 @@ export default {
 #app {
   margin: 0px;
   padding: 0px;
+  height: 100%;
 }
 </style>
