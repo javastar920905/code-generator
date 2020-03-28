@@ -26,11 +26,11 @@
     <div class="layout">
         <Layout>
             <Header>
-                <Menu mode="horizontal" theme="dark" active-name="1">
+                <Menu mode="horizontal" theme="dark" active-name="1" @on-select="selectOperation">
                     <div class="layout-logo"><img src="../assets/logo.png" height="30" width="30"/></div>
                     <div class="layout-nav">
                         <MenuItem name="1">
-                            <Icon type="md-add-circle" />
+                            <Icon type="md-add-circle"/>
                             新建数据库连接
                         </MenuItem>
                         <MenuItem name="2">
@@ -77,19 +77,48 @@
                         <BreadcrumbItem>Layout</BreadcrumbItem>
                     </Breadcrumb>
                     <Content :style="{padding: '24px', minHeight: '280px', background: '#fff'}">
-                        Content
+                        <config-detail></config-detail>
                     </Content>
                 </Layout>
             </Layout>
         </Layout>
+        <DBConfig :drawerVisible.sync="drawerVisible"></DBConfig>
+        <!--配置-->
+        <config-modal :configVisible.sync="configVisible"></config-modal>
+
     </div>
 </template>
 <script>
     import DBConfig from './DBConfig'
+    import ConfigModal from './ConfigModal'
+    import ConfigDetail from './ConfigDetail'
     export default {
-        component:{
-            DBConfig
+        components:{
+            DBConfig,
+            ConfigModal,
+            ConfigDetail
+        },
+        data() {
+            return {
+                drawerVisible: false,
+                configVisible: false
+            }
+        },
+        methods: {
+            selectOperation(name) {
+                if (name == 1) {
+                    /*新建数据库连接*/
+                    this.drawerVisible = true
+                } else {
+                    this.configVisible = true
+                }
+            }
         }
 
     }
 </script>
+<style>
+    .ivu-btn {
+        margin-right: 10px;
+    }
+</style>

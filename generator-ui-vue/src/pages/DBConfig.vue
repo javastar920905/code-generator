@@ -1,78 +1,65 @@
 <template>
     <div>
-        <Button @click="value3 = true" type="primary">Create</Button>
+
         <Drawer
-                title="Create"
-                v-model="value3"
-                width="720"
-                :mask-closable="false"
-                :styles="styles"
+            title="新建数据库连接"
+            v-model="openDrawer"
+            width="720"
+            :mask-closable="false"
+            :styles="styles"
         >
-            <Form :model="formData">
-                <Row :gutter="32">
-                    <Col span="12">
-                        <FormItem label="Name" label-position="top">
-                            <Input v-model="formData.name" placeholder="please enter user name" />
-                        </FormItem>
-                    </Col>
-                    <Col span="12">
-                        <FormItem label="Url" label-position="top">
-                            <Input v-model="formData.url" placeholder="please enter url">
-                                <span slot="prepend">http://</span>
-                                <span slot="append">.com</span>
-                            </Input>
-                        </FormItem>
-                    </Col>
-                </Row>
-                <Row :gutter="32">
-                    <Col span="12">
-                        <FormItem label="Owner" label-position="top">
-                            <Select v-model="formData.owner" placeholder="please select an owner">
-                                <Option value="jobs">Steven Paul Jobs</Option>
-                                <Option value="ive">Sir Jonathan Paul Ive</Option>
-                            </Select>
-                        </FormItem>
-                    </Col>
-                    <Col span="12">
-                        <FormItem label="Type" label-position="top">
-                            <Select v-model="formData.type" placeholder="please choose the type">
-                                <Option value="private">Private</Option>
-                                <Option value="public">Public</Option>
-                            </Select>
-                        </FormItem>
-                    </Col>
-                </Row>
-                <Row :gutter="32">
-                    <Col span="12">
-                        <FormItem label="Approver" label-position="top">
-                            <Select v-model="formData.approver" placeholder="please choose the approver">
-                                <Option value="jobs">Steven Paul Jobs</Option>
-                                <Option value="ive">Sir Jonathan Paul Ive</Option>
-                            </Select>
-                        </FormItem>
-                    </Col>
-                    <Col span="12">
-                        <FormItem label="DateTime" label-position="top">
-                            <DatePicker v-model="formData.date" type="daterange" placeholder="please select the date" style="display: block" placement="bottom-end"></DatePicker>
-                        </FormItem>
-                    </Col>
-                </Row>
-                <FormItem label="Description" label-position="top">
-                    <Input type="textarea" v-model="formData.desc" :rows="4" placeholder="please enter the description" />
+            <Form :model="formData" :label-width="100">
+                <FormItem label="保存名称" >
+                    <Input v-model="formData.name" />
                 </FormItem>
+                <FormItem label="数据库类型" >
+                    <Select v-model="formData.owner">
+                        <Option value="jobs">Steven Paul Jobs</Option>
+                        <Option value="ive">Sir Jonathan Paul Ive</Option>
+                    </Select>
+                </FormItem>
+                <FormItem label="主机名或IP地址" >
+                    <Input v-model="formData.url" />
+                </FormItem>
+                <FormItem label="端口号" >
+                    <Input v-model="formData.url" />
+                </FormItem>
+                <FormItem label="用户名" >
+                    <Input v-model="formData.url" />
+                </FormItem>
+                <FormItem label="密码" >
+                    <Input v-model="formData.url" />
+                </FormItem>
+                <FormItem label="Schema/数据库" >
+                    <Input v-model="formData.url" />
+                </FormItem>
+
+                <FormItem label="编码" >
+                    <Select v-model="formData.owner">
+                        <Option value="jobs">Steven Paul Jobs</Option>
+                        <Option value="ive">Sir Jonathan Paul Ive</Option>
+                    </Select>
+                </FormItem>
+
             </Form>
             <div class="demo-drawer-footer">
-                <Button style="margin-right: 8px" @click="value3 = false">Cancel</Button>
-                <Button type="primary" @click="value3 = false">Submit</Button>
+                <Button style="margin-right: 8px" @click="openDrawer = false">取消</Button>
+                <Button type="primary" @click="openDrawer = false">保存</Button>
             </div>
         </Drawer>
     </div>
 </template>
 <script>
     export default {
+        props: {
+            drawerVisible: {
+             type: Boolean,
+             default: false
+            }
+        },
         data () {
             return {
-                value3: false,
+                openDrawer: this.drawerVisible,
                 styles: {
                     height: 'calc(100% - 55px)',
                     overflow: 'auto',
@@ -88,6 +75,14 @@
                     date: '',
                     desc: ''
                 },
+            }
+        },
+        watch: {
+            openDrawer(val) {
+                this.$emit("update:drawerVisible", val)
+            },
+            drawerVisible(val) {
+                this.openDrawer = val
             }
         }
     }
