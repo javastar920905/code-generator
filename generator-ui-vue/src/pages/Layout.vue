@@ -44,13 +44,20 @@
             </Header>
             <Layout>
                 <Sider hide-trigger :style="{background: '#fff'}" width="300">
-                    <Menu active-name="1-2" theme="light" width="auto" :open-names="['1']" @on-open-change="getSubNavList">
+                    <Menu active-name="1-2" theme="light" width="auto" :open-names="[]" accordion @on-open-change="getSubNavList">
                         <Submenu v-for="(item, index) in navList" :key="index" :name="item.name">
                             <template slot="title">
                                 <Icon tyoe="ios-navigate"></Icon>
                                 {{item.name}}
                             </template>
+                            <template v-if="navName===item.name">
+                                <MenuItem :name="subIndex+'sub'" v-for="(subItem, subIndex) in subNavList" :key="subIndex+'sub'">
+                                    {{subItem}}11
+                                </MenuItem>
+                            </template>
+
                         </Submenu>
+
                         <!--
                         <Submenu name="1">
                             <template slot="title">
@@ -113,7 +120,9 @@
                 drawerVisible: false,
                 configVisible: false,
                 navList: [],
-                subNavList: []
+                subNavList: [],
+                navName: "",
+
             }
         },
         mounted() {
@@ -141,15 +150,16 @@
                     })
             },
             getSubNavList(name) {
-                this.axios.get('/DBConfig/getTablesByDBConfig?dBConfigName='+name)
+                this.navName = name[0]
+                this.axios.get('/DBConfig/getTablesByDBConfig?dBConfigName='+name[0])
                     .then((response) =>{
                         // handle success
                         this.subNavList = response.data.data
-                        console.log(this.subNavList)
                     })
                     .catch((error) => {
                         // handle error
                         console.log(error);
+                        this.$Message.error(error.message)
                     })
             }
 
