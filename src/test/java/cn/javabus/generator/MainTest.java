@@ -53,4 +53,20 @@ public class MainTest {
     }
 
 
+    @Test
+    public void delAllDatabaseConfig() {
+        try {
+            //1 加载数据库连接列表
+            List<DatabaseConfig> dbConfigs = ConfigHelper.loadDatabaseConfig();
+            for (DatabaseConfig dbConfig : dbConfigs) {
+                ConfigHelper.deleteDatabaseConfig(dbConfig);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
 }

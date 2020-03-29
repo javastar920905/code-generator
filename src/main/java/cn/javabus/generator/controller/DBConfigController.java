@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.EOFException;
+import java.sql.Connection;
 import java.util.List;
 
 /**
@@ -47,16 +48,8 @@ public class DBConfigController {
     }
 
     private DatabaseConfig getDBConfigByName(String dBConfigName) {
-        DatabaseConfig selectedDatabaseConfig = null;
-        List<DatabaseConfig> databaseConfigs = ThreadLocalUtil.getDatabaseConfigs();
-
-        for (DatabaseConfig db : databaseConfigs) {
-            if (db.getName().equals(dBConfigName)) {
-                selectedDatabaseConfig = db;
-                ThreadLocalUtil.selectedDatabaseConfig.set(db);
-                break;
-            }
-        }
+        DatabaseConfig selectedDatabaseConfig = ThreadLocalUtil.getDatabaseConfigs(dBConfigName);
+        ThreadLocalUtil.selectedDatabaseConfig.set(selectedDatabaseConfig);
         return selectedDatabaseConfig;
     }
 
@@ -99,8 +92,10 @@ public class DBConfigController {
         }
         if (!config.getOverssh()) {//TCP/IP 连接
             try {
-                DbUtil.getConnection(config);
-                return Result.ok("连接成功");
+                Connection connection = DbUtil.getConnection(config);
+                if (connection!=null){
+                    return Result.ok("连接成功");
+                }
             } catch (RuntimeException e) {
                 logger.error("", e);
                 Result.fail("连接失败, " + e.getMessage());
@@ -171,6 +166,7 @@ public class DBConfigController {
 
         try {
             ConfigHelper.saveDatabaseConfig(databaseConfig.getUpdate(), databaseConfig.getId(), databaseConfig);
+            ThreadLocalUtil.forceLoadDatabaseConfigs();
             return Result.ok();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -201,6 +197,7 @@ public class DBConfigController {
                 return Result.fail("数据库配置名不存在" + dbConfigByName);
             }
             ConfigHelper.deleteDatabaseConfig(dbConfigByName);
+            ThreadLocalUtil.forceLoadDatabaseConfigs();
             return Result.ok();
         } catch (Exception e) {
             logger.error("Delete connection failed! Reason: " + e.getMessage());
