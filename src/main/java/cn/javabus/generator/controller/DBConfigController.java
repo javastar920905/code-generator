@@ -54,6 +54,7 @@ public class DBConfigController {
             if (db.getName().equals(dBConfigName)) {
                 selectedDatabaseConfig = db;
                 ThreadLocalUtil.selectedDatabaseConfig.set(db);
+                break;
             }
         }
         return selectedDatabaseConfig;

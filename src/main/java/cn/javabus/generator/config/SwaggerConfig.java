@@ -1,4 +1,4 @@
-package cn.javabus.generator;
+package cn.javabus.generator.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

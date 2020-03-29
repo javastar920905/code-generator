@@ -13,6 +13,7 @@
 - 具体查看 package.json dependencies{...}
 - vue-router 路由
 - iview ui 组件
+- cnpm install axios --save   --save 会自动把依赖写入,package.json
 
 ## Project setup
 ```

@@ -1,6 +1,7 @@
 package cn.javabus.generator.util;
 
 import cn.javabus.generator.model.DatabaseConfig;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +14,9 @@ public class ThreadLocalUtil {
     public static ThreadLocal<DatabaseConfig> selectedDatabaseConfig = new ThreadLocal<>();
 
     public static List<DatabaseConfig> getDatabaseConfigs() {
-        if (dbConfigs == null) {
+        if (CollectionUtils.isEmpty(dbConfigs)) {
             synchronized (dbConfigs) {
-                if (dbConfigs == null) {
+                if (CollectionUtils.isEmpty(dbConfigs)) {
                     forceLoadDatabaseConfigs();
                 }
             }

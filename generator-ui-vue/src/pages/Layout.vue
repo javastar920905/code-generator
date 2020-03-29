@@ -1,12 +1,13 @@
 <style scoped>
-    .layout{
+    .layout {
         border: 1px solid #d7dde4;
         background: #f5f7f9;
         position: relative;
         border-radius: 4px;
         overflow: hidden;
     }
-    .layout-logo{
+
+    .layout-logo {
         width: 100px;
         height: 30px;
         background: #5b6270;
@@ -16,7 +17,8 @@
         top: 15px;
         left: 20px;
     }
-    .layout-nav{
+
+    .layout-nav {
         width: 420px;
         margin: 0 auto;
         margin-right: 20px;
@@ -34,15 +36,22 @@
                             新建数据库连接
                         </MenuItem>
                         <MenuItem name="2">
-                            <Icon type="ios-paper-outline" />
+                            <Icon type="ios-paper-outline"/>
                             配置
                         </MenuItem>
                     </div>
                 </Menu>
             </Header>
             <Layout>
-                <Sider hide-trigger :style="{background: '#fff'}">
-                    <Menu active-name="1-2" theme="light" width="auto" :open-names="['1']">
+                <Sider hide-trigger :style="{background: '#fff'}" width="300">
+                    <Menu active-name="1-2" theme="light" width="auto" :open-names="['1']" @on-open-change="getSubNavList">
+                        <Submenu v-for="(item, index) in navList" :key="index" :name="item.name">
+                            <template slot="title">
+                                <Icon tyoe="ios-navigate"></Icon>
+                                {{item.name}}
+                            </template>
+                        </Submenu>
+                        <!--
                         <Submenu name="1">
                             <template slot="title">
                                 <Icon type="ios-navigate"></Icon>
@@ -67,7 +76,7 @@
                             </template>
                             <MenuItem name="3-1">Option 1</MenuItem>
                             <MenuItem name="3-2">Option 2</MenuItem>
-                        </Submenu>
+                        </Submenu>-->
                     </Menu>
                 </Sider>
                 <Layout :style="{padding: '0 24px 24px'}">
@@ -92,8 +101,9 @@
     import DBConfig from './DBConfig'
     import ConfigModal from './ConfigModal'
     import ConfigDetail from './ConfigDetail'
+
     export default {
-        components:{
+        components: {
             DBConfig,
             ConfigModal,
             ConfigDetail
@@ -101,8 +111,13 @@
         data() {
             return {
                 drawerVisible: false,
-                configVisible: false
+                configVisible: false,
+                navList: [],
+                subNavList: []
             }
+        },
+        mounted() {
+            this.getDBConfigList()
         },
         methods: {
             selectOperation(name) {
@@ -112,7 +127,32 @@
                 } else {
                     this.configVisible = true
                 }
+            },
+            getDBConfigList() {
+                this.axios.get('/DBConfig/getDBConfigList')
+                    .then((response) =>{
+                        // handle success
+                        this.navList = response.data.data
+                        console.log(this.navList)
+                    })
+                    .catch((error) => {
+                        // handle error
+                        console.log(error);
+                    })
+            },
+            getSubNavList(name) {
+                this.axios.get('/DBConfig/getTablesByDBConfig?dBConfigName='+name)
+                    .then((response) =>{
+                        // handle success
+                        this.subNavList = response.data.data
+                        console.log(this.subNavList)
+                    })
+                    .catch((error) => {
+                        // handle error
+                        console.log(error);
+                    })
             }
+
         }
 
     }
