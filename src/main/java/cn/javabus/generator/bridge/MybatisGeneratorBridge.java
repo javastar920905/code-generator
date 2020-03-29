@@ -67,9 +67,9 @@ public class MybatisGeneratorBridge {
         CodeGenerator.BASE_PACKAGE = generatorConfig.getBasePackage();
         CodeGenerator.MODEL_PACKAGE = generatorConfig.getModelPackage();
         CodeGenerator.MAPPER_PACKAGE = generatorConfig.getDaoPackage();
-        CodeGenerator.MAPPER_INTERFACE_REFERENCE=generatorConfig.getTkCommonMapper();
+        CodeGenerator.MAPPER_INTERFACE_REFERENCE = generatorConfig.getTkCommonMapper();
         //ftl模板目录
-        CodeGenerator.TEMPLATE_FILE_PATH=generatorConfig.getFtlTemplateFolder();
+        CodeGenerator.TEMPLATE_FILE_PATH = generatorConfig.getFtlTemplateFolder();
 
         //自定义 生成controller 和service
         CodeGenerator.genCodeByCustomModelName(generatorConfig.getTableName(), null);
@@ -98,9 +98,9 @@ public class MybatisGeneratorBridge {
         tableConfig.setDomainObjectName(generatorConfig.getDomainObjectName());
 
         //根据选中条件动态配置
-        configByCondition(tableConfig,context);
+        configByCondition(tableConfig, context);
         //根据数据库类型动态配置
-        configDynamicByDbType(dbType,tableConfig,context);
+        configDynamicByDbType(dbType, tableConfig, context);
 
         // java model
         JavaModelGeneratorConfiguration modelConfig = new JavaModelGeneratorConfiguration();
@@ -148,6 +148,7 @@ public class MybatisGeneratorBridge {
 
     /**
      * 根据数据库类型动态配置
+     *
      * @param dbType
      * @param tableConfig
      * @param context
@@ -257,6 +258,7 @@ public class MybatisGeneratorBridge {
 
     /**
      * 根据选中条件动态配置
+     *
      * @param tableConfig
      * @param context
      */

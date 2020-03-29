@@ -23,6 +23,9 @@
         margin: 0 auto;
         margin-right: 20px;
     }
+    .ivu-menu-vertical .ivu-menu-item, .ivu-menu-vertical .ivu-menu-submenu-title {
+        padding: 2px 24px;
+    }
 </style>
 <template>
     <div class="layout">
@@ -37,68 +40,46 @@
                         </MenuItem>
                         <MenuItem name="2">
                             <Icon type="ios-paper-outline"/>
-                            配置
+                            已保存的配置
                         </MenuItem>
                     </div>
                 </Menu>
             </Header>
             <Layout>
                 <Sider hide-trigger :style="{background: '#fff'}" width="300">
-                    <Menu active-name="1-2" theme="light" width="auto" :open-names="[]" accordion @on-open-change="getSubNavList">
+                    <Menu theme="light" width="auto" accordion @on-open-change="getSubNavList"
+                          @on-select="selectMenuItem">
                         <Submenu v-for="(item, index) in navList" :key="index" :name="item.name">
                             <template slot="title">
                                 <Icon tyoe="ios-navigate"></Icon>
                                 {{item.name}}
                             </template>
                             <template v-if="navName===item.name">
-                                <MenuItem :name="subIndex+'sub'" v-for="(subItem, subIndex) in subNavList" :key="subIndex+'sub'">
-                                    {{subItem}}11
+                                <MenuItem :name="subItem" v-for="(subItem, subIndex) in subNavList"
+                                          :key="subIndex+'sub'">
+                                    {{subItem}}
                                 </MenuItem>
                             </template>
 
                         </Submenu>
 
-                        <!--
-                        <Submenu name="1">
-                            <template slot="title">
-                                <Icon type="ios-navigate"></Icon>
-                                Item 1
-                            </template>
-                            <MenuItem name="1-1">Option 1</MenuItem>
-                            <MenuItem name="1-2">Option 2</MenuItem>
-                            <MenuItem name="1-3">Option 3</MenuItem>
-                        </Submenu>
-                        <Submenu name="2">
-                            <template slot="title">
-                                <Icon type="ios-keypad"></Icon>
-                                Item 2
-                            </template>
-                            <MenuItem name="2-1">Option 1</MenuItem>
-                            <MenuItem name="2-2">Option 2</MenuItem>
-                        </Submenu>
-                        <Submenu name="3">
-                            <template slot="title">
-                                <Icon type="ios-analytics"></Icon>
-                                Item 3
-                            </template>
-                            <MenuItem name="3-1">Option 1</MenuItem>
-                            <MenuItem name="3-2">Option 2</MenuItem>
-                        </Submenu>-->
                     </Menu>
                 </Sider>
                 <Layout :style="{padding: '0 24px 24px'}">
-                    <Breadcrumb :style="{margin: '24px 0'}">
-                        <BreadcrumbItem>Home</BreadcrumbItem>
-                        <BreadcrumbItem>Components</BreadcrumbItem>
-                        <BreadcrumbItem>Layout</BreadcrumbItem>
-                    </Breadcrumb>
+                    <!--<Breadcrumb :style="{margin: '24px 0'}">-->
+                        <!--<BreadcrumbItem>Home</BreadcrumbItem>-->
+                        <!--<BreadcrumbItem>Components</BreadcrumbItem>-->
+                        <!--<BreadcrumbItem>Layout</BreadcrumbItem>-->
+                    <!--</Breadcrumb>-->
                     <Content :style="{padding: '24px', minHeight: '280px', background: '#fff'}">
-                        <config-detail></config-detail>
+                        <!--传递选中表名称给子组件-->
+                        <config-detail :parentSelectedTableName.sync="selectedTableName"></config-detail>
                     </Content>
                 </Layout>
             </Layout>
         </Layout>
-        <DBConfig :drawerVisible.sync="drawerVisible"></DBConfig>
+        <!--dbconfigUpdated 接收子组件的广播事件-->
+        <DBConfig :drawerVisible.sync="drawerVisible" ></DBConfig>
         <!--配置-->
         <config-modal :configVisible.sync="configVisible"></config-modal>
 
@@ -107,7 +88,7 @@
 <script>
     import DBConfig from './DBConfig'
     import ConfigModal from './ConfigModal'
-    import ConfigDetail from './ConfigDetail'
+    import ConfigDetail from './GeneratorConfigDetail'
 
     export default {
         components: {
@@ -122,12 +103,23 @@
                 navList: [],
                 subNavList: [],
                 navName: "",
+                selectedTableName:"",//当前选中数据库表名称
 
             }
         },
         mounted() {
             this.getDBConfigList()
+            var that=this;
+
+            //监听事件
+            this.$eventHub.$on('updateDbConfig', (val)=>{
+                console.log('广播传过来的值是'+val);
+                that.getDBConfigList()
+            } )
+
+
         },
+
         methods: {
             selectOperation(name) {
                 if (name == 1) {
@@ -139,28 +131,27 @@
             },
             getDBConfigList() {
                 this.axios.get('/DBConfig/getDBConfigList')
-                    .then((response) =>{
+                    .then((response) => {
                         // handle success
                         this.navList = response.data.data
-                        console.log(this.navList)
                     })
                     .catch((error) => {
-                        // handle error
-                        console.log(error);
+                        this.errMsg(error)
                     })
             },
-            getSubNavList(name) {
+            getSubNavList(name) {//加载指定数据库 的所有数据表
                 this.navName = name[0]
-                this.axios.get('/DBConfig/getTablesByDBConfig?dBConfigName='+name[0])
-                    .then((response) =>{
-                        // handle success
+                this.axios.get('/DBConfig/getTablesByDBConfig?dBConfigName=' + name[0])
+                    .then((response) => {
                         this.subNavList = response.data.data
                     })
                     .catch((error) => {
-                        // handle error
-                        console.log(error);
-                        this.$Message.error(error.message)
+                        this.errMsg(error)
                     })
+            },
+            selectMenuItem(name) {//选中数据表名称
+                this.selectedTableName=name;
+                console.log(name)
             }
 
         }

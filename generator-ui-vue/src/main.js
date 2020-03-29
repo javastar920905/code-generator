@@ -32,6 +32,32 @@ axios.defaults.headers.common['Authorization'] = 'AUTH_TOKEN';
 
 
 Vue.prototype.axios = axios;
+Vue.prototype.msg = function (response) {
+    if (response.data==null){
+        console.log(response)
+        this.$Message.error(response.message);
+        return;
+    }
+    if (response.data.code == 200) {
+        this.$Message.success(response.data.message)
+    } else {
+        this.$Message.error(response.data.message)
+    }
+};
+Vue.prototype.errMsg = function (error) {
+    this.$Message.error(error.message)
+};
+Vue.prototype.okMsg = function (msg) {
+    this.$Message.success(msg)
+};
+
+//定义$eventHub 用于接收广播事件
+Vue.prototype.$eventHub= Vue.prototype.$eventHub || new Vue();
+// 调用$emit 广播事件  this.$eventHub.$emit('你的事件名字', 你的需要传送的数据)
+// 事件接收者 this.$eventHub.$on('你的事件名字', (val)=>{ handle(yourData)} )
+// 关闭广播  我们主要通过 $off(你的事件名字)来取消收听
+
+
 
 Vue.config.productionTip = false
 // The routing configuration

@@ -14,7 +14,7 @@
                 </FormItem>
                 <FormItem label="数据库类型" prop="dbType">
                     <Select v-model="formData.dbType">
-                        <Option value="MySql">MySql</Option>
+                        <Option value="mysql">mysql</Option>
                     </Select>
                 </FormItem>
                 <FormItem label="主机名或IP地址" prop="host">
@@ -68,13 +68,13 @@
                     sOverssh: false,
                     isUpdate: false,
                     id: "",
-                    dbType: "MySql",
+                    dbType: "mysql",
                     name: "db_test",
                     host: "10.30.0.9",
                     port: "3306",
                     schema: "dcmall_uat",
                     username: "malluat",
-                    password: "malluat1234!",
+                    password: "malluat1234@",
                     encoding: "utf8",
 
                     lport: "",
@@ -125,11 +125,12 @@
                             if (response.data.code == 200) {
                                 this.$Message.success(response.data.message);
                                 this.openDrawer=false;
+                                this.$eventHub.$emit("updateDbConfig", true)
                             } else {
                                 this.$Message.error(response.data.message);
                             }
                         }).catch((error) => {
-                            this.$message.error(error.message)
+                            this.errMsg(error)
                         });
                     } else {
                         this.$Message.error('Fail!');

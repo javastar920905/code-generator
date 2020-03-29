@@ -49,7 +49,6 @@ public class CodeGenerator {
 
     //controller service 核心类代理
     private static String TEMPLATE_CORE_FILE_PATH = CodeGenerator.class.getResource("/generator/template/core").getPath();
-    ;
     private static final String JAVA_PATH = "/src/main/java"; // java文件路径
     private static final String RESOURCES_PATH = "/src/main/resources";// 资源文件路径
 

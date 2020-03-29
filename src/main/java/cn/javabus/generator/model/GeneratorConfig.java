@@ -56,7 +56,7 @@ public class GeneratorConfig {
     @ApiModelProperty(value = "本配置的名称  命名建议 公司_项目_模块", required = true)
     private String name;
 
-    @ApiModelProperty(required = false)
+    @ApiModelProperty(required = false,hidden = true)
     private String connectorJarPath;
 
     @ApiModelProperty("需要生成代码的项目,所在目录")
@@ -153,7 +153,7 @@ public class GeneratorConfig {
     /**
      * 通用mapper
      */
-    @ApiModelProperty("通用mapper")
+    @ApiModelProperty("通用mapper tk.mybatis.mapper.common.Mapper")
     private String tkCommonMapper;
     /**
      * ftl 模板所在目录

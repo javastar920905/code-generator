@@ -49,7 +49,7 @@ public class DBConfigController {
 
     private DatabaseConfig getDBConfigByName(String dBConfigName) {
         DatabaseConfig selectedDatabaseConfig = ThreadLocalUtil.getDatabaseConfigs(dBConfigName);
-        ThreadLocalUtil.selectedDatabaseConfig.set(selectedDatabaseConfig);
+        ThreadLocalUtil.selectedDatabaseConfig=selectedDatabaseConfig;
         return selectedDatabaseConfig;
     }
 
@@ -189,7 +189,7 @@ public class DBConfigController {
     }
 
 
-    @PostMapping("delDBConfig")
+    @DeleteMapping("delDBConfig")
     public Result delDBConfig(@RequestParam String dbConfigName) {
         try {
             DatabaseConfig dbConfigByName = getDBConfigByName(dbConfigName);

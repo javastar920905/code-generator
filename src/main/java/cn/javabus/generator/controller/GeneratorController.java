@@ -48,7 +48,7 @@ public class GeneratorController {
      */
     @ApiOperation("生成代码")
     @PostMapping("generateCode")
-    public Result generateCode(GeneratorConfig config) {
+    public Result generateCode(@RequestBody  GeneratorConfig config) {
         if (config == null || StringUtils.isEmpty(config.getTableName())) {
             return Result.fail("请先在左侧选择数据库表");
         }
@@ -59,7 +59,10 @@ public class GeneratorController {
         if (!checkDirs(config)) {
             return Result.fail("选中目标目录检查,创建失败");
         }
-        DatabaseConfig selectedDatabaseConfig= ThreadLocalUtil.selectedDatabaseConfig.get();
+        DatabaseConfig selectedDatabaseConfig= ThreadLocalUtil.selectedDatabaseConfig;
+        if (selectedDatabaseConfig==null){
+            return Result.fail("请先选中一个数据库连接,选中要生成代码的数据表");
+        }
 
         MybatisGeneratorBridge bridge = new MybatisGeneratorBridge();
         bridge.setGeneratorConfig(config);
@@ -86,7 +89,7 @@ public class GeneratorController {
      */
     @PostMapping("saveConfig")
     @ApiOperation("保存当前代码生成配置信息 命名建议 公司_项目_模块")
-    public Result saveGeneratorConfig(GeneratorConfig generatorConfig) {
+    public Result saveGeneratorConfig(@RequestBody GeneratorConfig generatorConfig) {
         if (generatorConfig == null) {
             return Result.fail("参数不能为空");
         }
@@ -108,12 +111,11 @@ public class GeneratorController {
     /**
      * 加载配置列表
      *
-     * @param generatorConfig
      * @return
      */
     @GetMapping("getConfigList")
     @ApiOperation("加载配置列表")
-    public Result getGeneratorConfig(GeneratorConfig generatorConfig) {
+    public Result getGeneratorConfigList() {
         try {
             List<GeneratorConfig> configs = ConfigHelper.loadGeneratorConfigs();
             return Result.ok(configs);
@@ -141,7 +143,7 @@ public class GeneratorController {
     }
 
 
-    @GetMapping("delConfig")
+    @DeleteMapping("delConfig")
     public Result delGeneratorConfig(@RequestParam String generatorConfigName) {
         try {
             ConfigHelper.deleteGeneratorConfig(generatorConfigName);
