@@ -2,6 +2,7 @@ package cn.javabus.generator.plugins;
 
 /**
  * Created by zouzhigang on 2016/6/14.
+ * mysql 分页插件
  */
 
 import org.mybatis.generator.api.IntrospectedTable;

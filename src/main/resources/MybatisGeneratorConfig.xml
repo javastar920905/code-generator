@@ -32,12 +32,19 @@
             2，flat：所有内容（主键，blob）等全部生成在一个对象中；
             3，hierarchical：主键生成一个XXKey对象(key class)，Blob等单独生成一个对象，其他简单属性在一个对象中(record class)
         targetRuntime:
-            1，MyBatis3：默认的值，生成基于MyBatis3.x以上版本的内容，包括XXXBySample；
+            1，MyBatis3：默认的值，生成基于MyBatis3.x以上版本的内容，包括XXXBySample；  <javaClientGenerator type="XMLMAPPER"
             2，MyBatis3Simple：类似MyBatis3，只是不生成XXXBySample；
+            3 targetRuntime="Ibatis2Java5"   <javaClientGenerator 不能用 type="XMLMAPPER"
             introspectedColumnImpl：类全限定名，用于扩展MBG
     -->
     <context id="mysql" targetRuntime="MyBatis3" defaultModelType="flat">
-        <!--<plugin type="com.rencaijia.crm.persistent.CustomInterfaceMethodPlugin"></plugin>-->
+        <!--实体类 自动实现接口 Serializable-->
+        <!--<plugin type="org.mybatis.generator.plugins.SerializablePlugin"></plugin>-->
+        <!--实体类流式构建对接-->
+        <plugin type="org.mybatis.generator.plugins.FluentBuilderMethodsPlugin"></plugin>
+        <plugin type="cn.javabus.generator.plugins.DCDaoImplPlugin"></plugin>
+        <plugin type="cn.javabus.generator.plugins.DbRemarksCommentGenerator"></plugin>
+        <!--<plugin type="cn.javabus.generator.plugins.CommonDAOInterfacePlugin"> </plugin>-->
 
         <!-- optional，旨在创建class时，对注释进行控制 -->
         <commentGenerator>
@@ -83,7 +90,7 @@
                 注意：如果在key class或者record class中有root class相同的属性，MBG就不会重新生成这些属性了，包括：
                     1，属性名相同，类型相同，有相同的getter/setter方法；
              -->
-            <property name="rootClass" value="cn.javabus.generator.test.BaseEntity"/>
+            <!--<property name="rootClass" value="cn.javabus.generator.test.BaseEntity"/>-->
             <!-- 建立的Model对象是否 不可改变  即生成的Model对象不会有 setter方法，只有构造方法 -->
             <property name="immutable" value="false"/>
             <!-- 设置是否在getter方法中，对String类型字段调用trim()方法 -->
@@ -112,22 +119,24 @@
             2，MIXEDMAPPER：使用混合配置，会生成Mapper接口，并适当添加合适的Annotation，但是XML会生成在XML中；
             3，XMLMAPPER：会生成Mapper接口，接口完全依赖XML；
           -->
-        <javaClientGenerator type="XMLMAPPER"
+        <!--当 context 的targetRuntime="Ibatis2Java5"时,不能用 type="XMLMAPPER"-->
+        <!--<javaClientGenerator type="cn.javabus.generator.util.DaoTemplate"-->
+         <javaClientGenerator type="XMLMAPPER"
                              targetPackage="cn.javabus.generator.test.dao"
                              targetProject="src/main/java">
             <!-- enableSubPackages:是否让schema作为包的后缀 -->
             <property name="enableSubPackages" value="false"/>
             <!-- 可以为所有生成的接口添加一个父接口，但是MBG只负责生成，不负责检查-->
-            <property name="rootInterface" value="tk.mybatis.mapper.common.Mapper"></property>
+            <!--<property name="rootInterface" value="tk.mybatis.mapper.common.Mapper"></property>-->
         </javaClientGenerator>
 
         <!--对应数据库表 生成以后需要完善BaseMapper中的泛型信息-->
         <table schema="mysql" tableName="life_product" domainObjectName="lifeProduct"
-               enableCountByExample="false"
-               enableUpdateByExample="false"
-               enableDeleteByExample="false"
-               enableSelectByExample="false"
-               selectByExampleQueryId="false">
+               enableCountByExample="true"
+               enableUpdateByExample="true"
+               enableDeleteByExample="true"
+               enableSelectByExample="true"
+               selectByExampleQueryId="true">
             <!-- 上面的属性都可以使用子标签形式表示 -->
             <!-- 是否使用真实字段名，设置为false将自动驼峰转换 -->
             <property name="useActualColumnNames" value="false"/>

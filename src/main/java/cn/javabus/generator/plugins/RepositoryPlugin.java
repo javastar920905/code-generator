@@ -10,6 +10,8 @@ import java.util.List;
  * Project: mybatis-generator-gui
  *
  * @author slankka on 2017/12/13.
+ *
+ * 添加@Repository 注解
  */
 public class RepositoryPlugin extends PluginAdapter {
 
