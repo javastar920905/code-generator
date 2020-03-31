@@ -1,5 +1,6 @@
 package cn.javabus.generator.plugins;
 
+import cn.javabus.generator.generator.impl.MybatisCodeGenerator;
 import org.mybatis.generator.api.*;
 import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.config.JavaClientGeneratorConfiguration;
@@ -7,7 +8,10 @@ import org.mybatis.generator.config.JavaModelGeneratorConfiguration;
 import org.mybatis.generator.exception.ShellException;
 import org.mybatis.generator.internal.DefaultShellCallback;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,9 +26,8 @@ import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
 public class DCDaoImplPlugin extends PluginAdapter {
     final String suffix_Dao = "DAO";
     final String suffix_DaoImpl = "DAOImpl";
-    //final String BaseDaoImplFullPath = "com.eagle.life.db.base.dao.LifeBaseDaoImpl";
-    final String BaseDaoImplFullPath = "cn.javabus.generator.test.LifeBaseDaoImpl";
-    final String BaseDaoImplName = ".LifeBaseDaoImpl";
+    final String BaseDaoImplFullPath = "com.eagle.life.db.base.dao.LifeBaseDaoImpl";
+    //final String BaseDaoImplFullPath = "cn.javabus.generator.test.LifeBaseDaoImpl";
     private static final FullyQualifiedJavaType PARAM_ANNOTATION_TYPE = new FullyQualifiedJavaType("org.apache.ibatis.annotations.Param");
     private static final FullyQualifiedJavaType LIST_TYPE = FullyQualifiedJavaType.getNewListInstance();
     private static final FullyQualifiedJavaType SERIALIZEBLE_TYPE = new FullyQualifiedJavaType("java.io.Serializable");
@@ -49,8 +52,58 @@ public class DCDaoImplPlugin extends PluginAdapter {
     }
 
 
+    @Override
+    public void initialized(IntrospectedTable introspectedTable) {//internalAttributes 属性有 36 个值
+        String daoInterfaceType = introspectedTable.getDAOInterfaceType();
+        introspectedTable.setDAOInterfaceType(daoInterfaceType);//有效了, 本身返回就是 DAO
+        introspectedTable.setDAOImplementationType(daoInterfaceType);
+        introspectedTable.setMyBatis3JavaMapperType(daoInterfaceType);//有效了,到生命周期最开始时设置有效
+        introspectedTable.setMyBatis3FallbackSqlMapNamespace(daoInterfaceType);//有效, 修改 Mapper文件 为 Dao
+        super.initialized(introspectedTable);
+    }
+
+    /**
+     * protected LifeProductRateExample(LifeProductRateExample example) {
+     * this.orderByClause = example.orderByClause;
+     * this.oredCriteria = example.oredCriteria;
+     * }
+     *
+     * @param topLevelClass
+     * @param introspectedTable
+     * @return
+     */
+    @Override
+    public boolean modelExampleClassGenerated(TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
+        String exampleFullName = introspectedTable.getExampleType(); //cn.javabus.generator.ok.model.lifeProductExample
+        String modelTargetPackage = context.getJavaModelGeneratorConfiguration().getTargetPackage();
+        String exampleShortName = exampleFullName.replace(modelTargetPackage + ".", "");
+        //1.2 添加构造器,构造函数,构造方法
+        Method construct = new Method(exampleShortName);
+        construct.setVisibility(JavaVisibility.PUBLIC);
+        construct.setConstructor(true);
+        construct.addParameter(new Parameter(new FullyQualifiedJavaType(exampleShortName), "example"));
+        construct.addBodyLine("this.orderByClause = example.orderByClause;");
+        construct.addBodyLine("this.oredCriteria = example.oredCriteria;");
+        topLevelClass.addMethod(construct);
+        return super.modelExampleClassGenerated(topLevelClass, introspectedTable);
+    }
+
+    @Override
+    public boolean clientGenerated(Interface interfaze, TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
+        String daoInterfaceType = introspectedTable.getDAOInterfaceType();
+        introspectedTable.setDAOInterfaceType(daoInterfaceType);//无效, 本身返回就是 DAO
+        introspectedTable.setMyBatis3JavaMapperType(daoInterfaceType);//无效,
+        introspectedTable.setMyBatis3FallbackSqlMapNamespace(daoInterfaceType);
+        String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();//表名称life_product
+        introspectedTable.setMyBatis3XmlMapperFileName(tableName+"_SqlMap.xml");
+
+        return super.clientGenerated(interfaze, topLevelClass, introspectedTable);
+    }
+
+
     /**
      * CompilationUnit 抽象类,提供三个实现类(Interface  创建接口文件 ,TopLevelClass  创建 class 文件,TopLevelEnumeration 创建枚举文件)
+     * 执行顺序 initialized> 实体类>example>countByxxx>updatexx>clientGenerated>contextGenerateAdditionalJavaFiles
      *
      * @param introspectedTable
      * @return
@@ -78,7 +131,7 @@ public class DCDaoImplPlugin extends PluginAdapter {
         String domainName = introspectedTable.getTableConfiguration().getDomainObjectName();
 
         String daoImplName = domainName + suffix_DaoImpl;
-        String fullDaoImpleName = daoTargetPackage + "." + daoImplName;
+        String fullDaoImpleName = daoTargetPackage + ".impl." + daoImplName;
         //1 创建类 包名+实体类+DAOImpl
         //声明父接口类  Interface mapperInterface = new Interface(daoTargetPackage + domainName + suffix_DaoImpl);
         TopLevelClass clazz = new TopLevelClass(fullDaoImpleName);
@@ -94,6 +147,7 @@ public class DCDaoImplPlugin extends PluginAdapter {
         if (stringHasValue(daoTargetPackage)) {
             //2 导入类
             clazz.addImportedType(LIST_TYPE);//java.util.List
+            clazz.addImportedType(daoInterfaceType);
             clazz.addImportedType(exampleFullName);//
             clazz.addImportedType(BaseDaoImplFullPath);//
             clazz.addImportedType(modelTargetPackage + "." + domainName);//导入实体类
@@ -105,25 +159,11 @@ public class DCDaoImplPlugin extends PluginAdapter {
             clazz.addJavaDocLine("/**");
             String datestr = DateFormat.getDateInstance().format(new Date());
             clazz.addJavaDocLine(" * " + " created by cn.javabus.generator.plugins.DCDaoImplPlugin on " + datestr);
-//            clazz.addJavaDocLine(" * " + "DAO公共基类，由MybatisGenerator自动生成请勿修改");
-//            clazz.addJavaDocLine(" * " + "@param <Model> The Model Class 这里是泛型不是Model类");
-//            clazz.addJavaDocLine(" * " + "@param <PK> The Primary Key Class 如果是无主键，则可以用Model来跳过，如果是多主键则是Key类");
-//            if (isUseExample()) {
-//                clazz.addJavaDocLine(" * " + "@param <E> The Example Class");
-//            }
             clazz.addJavaDocLine(" */");
 
-            FullyQualifiedJavaType daoBaseInterfaceJavaType = clazz.getType();//cn.javabus.generator.test.dao.lifeProductDAOImpl
-//            daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("Model"));
-//            daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("PK extends Serializable"));
-//            if (isUseExample()) {
-//                daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("E"));
-//            }
-            //4  继承基础类
-            //clazz.
 
             // 5 添加实现类implements 实体类名DAO {
-            clazz.addSuperInterface(new FullyQualifiedJavaType(daoTargetPackage + "." + domainName + "Mapper"));
+            clazz.addSuperInterface(new FullyQualifiedJavaType(daoTargetPackage + "." + domainName + suffix_Dao));
 
             if (!this.methods.isEmpty()) {
                 for (Method method : methods) {
@@ -131,19 +171,14 @@ public class DCDaoImplPlugin extends PluginAdapter {
                 }
             }
 
-//            List<GeneratedJavaFile> generatedJavaFiles = introspectedTable.getGeneratedJavaFiles();
-//            for (GeneratedJavaFile generatedJavaFile : generatedJavaFiles) {
-//                // generatedJavaFile.getCompilationUnit() 这里已经生成完整的代码了
-//                CompilationUnit compilationUnit = generatedJavaFile.getCompilationUnit();
-//                FullyQualifiedJavaType type = compilationUnit.getType();
-//                String modelName = type.getShortName();
-//                if (modelName.endsWith("DAO")) {
-//                }
-//            }
+
             // 6 生成内部类
             clazz.addInnerClass(customStaticClass(introspectedTable));
-            // 7 生成类文件
+            // 7 生成类文件  mapperJavafile y已经是类字符串了
             GeneratedJavaFile mapperJavafile = new GeneratedJavaFile(clazz, daoTargetDir, javaFileEncoding, javaFormatter);
+
+            //8 其他任务
+            customDao(introspectedTable);
             try {
 
                 File mapperDir = shellCallback.getDirectory(daoTargetDir, daoTargetPackage);//检查 dao 路径是否存在
@@ -158,6 +193,77 @@ public class DCDaoImplPlugin extends PluginAdapter {
         }
         return mapperJavaFiles;
     }
+
+
+    private void customDao(IntrospectedTable introspectedTable) {
+        String daoTargetDir = context.getJavaClientGeneratorConfiguration().getTargetProject();// src/main/java
+        String daoTargetPackage = context.getJavaClientGeneratorConfiguration().getTargetPackage();// cn.javabus.generator.test.dao
+        List<GeneratedJavaFile> generatedJavaFiles = introspectedTable.getGeneratedJavaFiles();
+        for (GeneratedJavaFile generatedJavaFile : generatedJavaFiles) {
+            // generatedJavaFile.getCompilationUnit() 这里已经生成完整的代码了
+            CompilationUnit compilationUnit = generatedJavaFile.getCompilationUnit();
+            FullyQualifiedJavaType type = compilationUnit.getType();
+            String modelName = type.getShortName();
+            if (modelName.contains("DAO")) {
+                try {
+                    File mapperDir = shellCallback.getDirectory(daoTargetDir, daoTargetPackage);//检查 dao 路径是否存在
+                    File daoFile = new File(mapperDir, generatedJavaFile.getFileName());
+//                    if (!daoFile.exists()) {
+//                        throw new IllegalArgumentException(daoFile.getName() + " 不存在!" + daoFile.getAbsolutePath());
+//                    }
+                    daoFielPath=daoFile.getPath();
+
+                } catch (ShellException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static String  daoFielPath=null;
+    public static void deleteAnnotation(String fileName) {
+        if (fileName==null){
+            return;
+        }
+        System.out.println("开始自定义生成Dao文件: " + fileName);
+        BufferedReader br = null;
+        String line = null;
+        StringBuffer buf = new StringBuffer();
+
+        try {
+            // 根据文件路径创建缓冲输入流
+            br = new BufferedReader(new FileReader(fileName));
+
+            // 循环读取文件的每一行, 对需要修改的行进行修改, 放入缓冲对象中
+            int publicCount = 0;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("import org.apache.ibatis.annotations.Param")) {
+                    continue;//丢弃@Id
+                }
+                if (line.contains("@Param(\"record\")") || line.contains("@Param(\"example\")")) {
+                    // 丢弃@Column注解和导入包
+                    buf.append(line.replace("@Param(\"record\")", "")
+                            .replace("@Param(\"example\")", "")).append("\r\n");
+                } else {
+                    // 如果不用修改, 则按原来的内容回写
+                    buf.append(line).append("\r\n");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // 关闭流
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    br = null;
+                }
+            }
+        }
+        MybatisCodeGenerator.write(fileName, buf.toString());
+    }
+
 
     /**
      * private static class UpdateByExampleParms extends ElecpolPolicyExample {
@@ -390,34 +496,35 @@ public class DCDaoImplPlugin extends PluginAdapter {
 
     @Override
     public boolean clientUpdateByExampleSelectiveMethodGenerated(Method method, Interface interfaze, IntrospectedTable introspectedTable) {
-        method = buildNewMethod(method);//移除@param注解
+        Method method1 = buildNewMethod(method);//移除@param注解
         String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();//表名称life_product
         String domainName = introspectedTable.getTableConfiguration().getDomainObjectName();
         Method methodImpl = buildNewMethodImpl(method);
 
         methodImpl.setReturnType(new FullyQualifiedJavaType("int"));
-        method.setReturnType(new FullyQualifiedJavaType("int"));
+        method1.setReturnType(new FullyQualifiedJavaType("int"));
         methodImpl.addBodyLine("UpdateByExampleParms parms = new UpdateByExampleParms(record, example);");
         methodImpl.addBodyLine(" int rows = this.updateObject(\"" + tableName + ".updateByExampleSelective\", parms);");
         methodImpl.addBodyLine("return rows;");
         this.methods.add(methodImpl);
-        return super.clientUpdateByExampleSelectiveMethodGenerated(method, interfaze, introspectedTable);
+        return super.clientUpdateByExampleSelectiveMethodGenerated(method1, interfaze, introspectedTable);
     }
 
     @Override
     public boolean clientUpdateByExampleWithoutBLOBsMethodGenerated(Method method, Interface interfaze, IntrospectedTable introspectedTable) {
-        method = buildNewMethod(method);//移除@param注解
+        Method method1 = buildNewMethod(method);//移除@param注解
         String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();//表名称life_product
         String domainName = introspectedTable.getTableConfiguration().getDomainObjectName();
         Method methodImpl = buildNewMethodImpl(method);
 
         methodImpl.setReturnType(new FullyQualifiedJavaType("int"));
-        method.setReturnType(new FullyQualifiedJavaType("int"));
+        method1.setReturnType(new FullyQualifiedJavaType("int"));
         methodImpl.addBodyLine("UpdateByExampleParms parms = new UpdateByExampleParms(record, example);");
         methodImpl.addBodyLine(" int rows = this.updateObject(\"" + tableName + ".updateByExample\", parms);");
         methodImpl.addBodyLine("return rows;");
         this.methods.add(methodImpl);
-        return super.clientUpdateByExampleWithoutBLOBsMethodGenerated(method, interfaze, introspectedTable);
+        //interfaze.addMethod(method1);
+        return super.clientUpdateByExampleWithoutBLOBsMethodGenerated(method1, interfaze, introspectedTable);
     }
 
 

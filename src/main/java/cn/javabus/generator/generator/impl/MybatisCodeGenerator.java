@@ -415,7 +415,7 @@ public class MybatisCodeGenerator extends MybatisGeneratorBridge {
         write(fileName, buf.toString());
     }
 
-    private static void write(String filePath, String content) {
+    public static void write(String filePath, String content) {
         BufferedWriter bw = null;
 
         try {
