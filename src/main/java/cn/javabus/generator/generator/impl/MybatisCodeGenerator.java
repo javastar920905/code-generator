@@ -1,5 +1,6 @@
-package cn.javabus.generator.bridge;
+package cn.javabus.generator.generator.impl;
 
+import cn.javabus.generator.generator.MybatisGeneratorBridge;
 import cn.javabus.generator.model.DatabaseConfig;
 import cn.javabus.generator.model.DbType;
 import cn.javabus.generator.model.GeneratorConfig;
@@ -23,9 +24,11 @@ import java.util.*;
  * 代码生成器，根据数据表名称生成对应的Model、Mapper、Service、Controller简化开发。
  * <p>
  * 改动CodeGenerator 类的配置 需要 mvn clean install才能生效
+ *
+ * 基于 spring boot seed种子项目  定制的代码生成器
  */
-public class CodeGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(CodeGenerator.class);
+public class MybatisCodeGenerator extends MybatisGeneratorBridge {
+    private static final Logger logger = LoggerFactory.getLogger(MybatisCodeGenerator.class);
 
     public static DatabaseConfig selectedDatabaseConfig;
     public static GeneratorConfig generatorConfig;
@@ -48,15 +51,39 @@ public class CodeGenerator {
     public static String TEMPLATE_FILE_PATH = "C:\\Users\\Administrator\\Desktop\\template";//
 
     //controller service 核心类代理
-    private static String TEMPLATE_CORE_FILE_PATH = CodeGenerator.class.getResource("/generator/template/core").getPath();
+    private static String TEMPLATE_CORE_FILE_PATH = MybatisCodeGenerator.class.getResource("/generator/template/core").getPath();
     private static final String JAVA_PATH = "/src/main/java"; // java文件路径
     private static final String RESOURCES_PATH = "/src/main/resources";// 资源文件路径
 
     private static final String AUTHOR = "ouzhx";// @author
     private static final String DATE = new SimpleDateFormat("yyyy/MM/dd").format(new Date());// @date
 
+    public MybatisCodeGenerator(GeneratorConfig generatorConfig) {
+        super(generatorConfig);
+    }
 
-//  public static void main(String[] args) {
+    @Override
+    public void generate() throws Exception {
+        MybatisCodeGenerator.selectedDatabaseConfig = selectedDatabaseConfig;
+        MybatisCodeGenerator.generatorConfig = generatorConfig;
+        MybatisCodeGenerator.PROJECT_PATH = generatorConfig.getProjectFolder();
+        MybatisCodeGenerator.BASE_PACKAGE = generatorConfig.getBasePackage();
+        MybatisCodeGenerator.MODEL_PACKAGE = generatorConfig.getModelPackage();
+        MybatisCodeGenerator.MAPPER_PACKAGE = generatorConfig.getDaoPackage();
+        MybatisCodeGenerator.MAPPER_INTERFACE_REFERENCE = generatorConfig.getTkCommonMapper();
+        //ftl模板目录
+        MybatisCodeGenerator.TEMPLATE_FILE_PATH = generatorConfig.getFtlTemplateFolder();
+
+        //自定义 生成controller 和service
+        MybatisCodeGenerator.genCodeByCustomModelName(generatorConfig.getTableName(), null);
+
+        //对生成的实体类进行改造
+        String javaDomainName = generatorConfig.getModelPackage().replaceAll("\\.", "/") + "/" + generatorConfig.getDomainObjectName() + ".java";
+        MybatisCodeGenerator.deleteAnnotation(javaDomainName);
+    }
+
+
+    //  public static void main(String[] args) {
 //    genCode("msg");
 //    // genCodeByCustomModelName("输入表名","输入自定义Model名称");
 //  }
@@ -72,6 +99,8 @@ public class CodeGenerator {
 //      genCodeByCustomModelName(tableName, null);
 //    }
 //  }
+
+
 
     /**
      * 通过数据表名称，和自定义的 Model 名称生成代码 如输入表名称 "t_user_detail" 和自定义的 Model 名称 "User" 将生成

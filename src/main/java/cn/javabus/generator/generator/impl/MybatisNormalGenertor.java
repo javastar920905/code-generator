@@ -1,6 +1,6 @@
-package cn.javabus.generator.bridge;
+package cn.javabus.generator.generator.impl;
 
-import cn.javabus.generator.model.DatabaseConfig;
+import cn.javabus.generator.generator.MybatisGeneratorBridge;
 import cn.javabus.generator.model.DbType;
 import cn.javabus.generator.model.GeneratorConfig;
 import cn.javabus.generator.plugins.DbRemarksCommentGenerator;
@@ -8,12 +8,9 @@ import cn.javabus.generator.util.ConfigHelper;
 import cn.javabus.generator.util.DbUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.api.MyBatisGenerator;
-import org.mybatis.generator.api.ProgressCallback;
 import org.mybatis.generator.api.ShellCallback;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultShellCallback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,63 +19,18 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The bridge between GUI and the mybatis generator. All the operation to  mybatis generator should proceed through this
- * class
- * <p>
- * Created by Owen on 6/30/16.
- * update by javabus.cn on 2019-05-22
+ * @author ou.zhenxing on 2020-03-31.
+ * 基于官方文档开发的生成器
  */
-public class MybatisGeneratorBridge {
-
-    private static final Logger _LOG = LoggerFactory.getLogger(MybatisGeneratorBridge.class);
-
-    /**
-     * 保存了项目配置 点击进去可以查看示例值
-     **/
-    private GeneratorConfig generatorConfig;
-
-    private DatabaseConfig selectedDatabaseConfig;
-
-    private ProgressCallback progressCallback;
-
-    private List<IgnoredColumn> ignoredColumns;
-
-    private List<ColumnOverride> columnOverrides;
-
-    public MybatisGeneratorBridge() {
+public class MybatisNormalGenertor extends MybatisGeneratorBridge {
+    public MybatisNormalGenertor(GeneratorConfig generatorConfig) {
+        super(generatorConfig);
     }
 
-    public void setGeneratorConfig(GeneratorConfig generatorConfig) {
-        this.generatorConfig = generatorConfig;
-    }
-
-    public void setDatabaseConfig(DatabaseConfig databaseConfig) {
-        this.selectedDatabaseConfig = databaseConfig;
-    }
-
-
+    @Override
     public void generate() throws Exception {
-//        // 生成实体类和mapper接口 mapper.xml
-        //genModelAndMapper();
-
-        CodeGenerator.selectedDatabaseConfig = selectedDatabaseConfig;
-        CodeGenerator.generatorConfig = generatorConfig;
-        CodeGenerator.PROJECT_PATH = generatorConfig.getProjectFolder();
-        CodeGenerator.BASE_PACKAGE = generatorConfig.getBasePackage();
-        CodeGenerator.MODEL_PACKAGE = generatorConfig.getModelPackage();
-        CodeGenerator.MAPPER_PACKAGE = generatorConfig.getDaoPackage();
-        CodeGenerator.MAPPER_INTERFACE_REFERENCE = generatorConfig.getTkCommonMapper();
-        //ftl模板目录
-        CodeGenerator.TEMPLATE_FILE_PATH = generatorConfig.getFtlTemplateFolder();
-
-        //自定义 生成controller 和service
-        CodeGenerator.genCodeByCustomModelName(generatorConfig.getTableName(), null);
-
-        //对生成的实体类进行改造
-        String javaDomainName = generatorConfig.getModelPackage().replaceAll("\\.", "/") + "/" + generatorConfig.getDomainObjectName() + ".java";
-        CodeGenerator.deleteAnnotation(javaDomainName);
-
-
+        //        // 生成实体类和mapper接口 mapper.xml
+        genModelAndMapper();
     }
 
     /**
@@ -153,7 +105,7 @@ public class MybatisGeneratorBridge {
      * @param tableConfig
      * @param context
      */
-    private void configDynamicByDbType(String dbType, TableConfiguration tableConfig, Context context) throws Exception {
+    protected void configDynamicByDbType(String dbType, TableConfiguration tableConfig, Context context) throws Exception {
         if (generatorConfig.isUseSchemaPrefix()) {
             if (DbType.MySQL.name().equals(dbType) || DbType.MySQL_8.name().equals(dbType)) {
                 tableConfig.setSchema(selectedDatabaseConfig.getSchema());
@@ -262,7 +214,7 @@ public class MybatisGeneratorBridge {
      * @param tableConfig
      * @param context
      */
-    private void configByCondition(TableConfiguration tableConfig, Context context) {
+    protected void configByCondition(TableConfiguration tableConfig, Context context) {
         if (!generatorConfig.isUseExample()) {// 是否生成 example 实体类
             tableConfig.setUpdateByExampleStatementEnabled(false);
             tableConfig.setCountByExampleStatementEnabled(false);
@@ -326,7 +278,7 @@ public class MybatisGeneratorBridge {
 
     }
 
-    private String getMappingXMLFilePath(GeneratorConfig generatorConfig) {
+    protected String getMappingXMLFilePath(GeneratorConfig generatorConfig) {
         StringBuilder sb = new StringBuilder();
         sb.append(generatorConfig.getProjectFolder()).append("/");
         sb.append(generatorConfig.getMappingXMLTargetFolder()).append("/");
@@ -341,17 +293,5 @@ public class MybatisGeneratorBridge {
         }
 
         return sb.toString();
-    }
-
-    public void setProgressCallback(ProgressCallback progressCallback) {
-        this.progressCallback = progressCallback;
-    }
-
-    public void setIgnoredColumns(List<IgnoredColumn> ignoredColumns) {
-        this.ignoredColumns = ignoredColumns;
-    }
-
-    public void setColumnOverrides(List<ColumnOverride> columnOverrides) {
-        this.columnOverrides = columnOverrides;
     }
 }

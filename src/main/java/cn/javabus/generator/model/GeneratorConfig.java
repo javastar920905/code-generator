@@ -3,8 +3,20 @@ package cn.javabus.generator.model;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * GeneratorConfig is the Config of mybatis generator config exclude database
@@ -49,6 +61,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GeneratorConfig {
+    private static Logger logger = LoggerFactory.getLogger(GeneratorConfig.class);
+
+    //检查并创建不存在的文件夹
+    private static final String FOLDER_NO_EXIST = "部分目录不存在，是否创建";
+    //持有数据库连接配置
+    private DatabaseConfig selectedDatabaseConfig;
 
     /**
      * 本配置的名称  命名建议 公司_项目_模块
@@ -56,7 +74,7 @@ public class GeneratorConfig {
     @ApiModelProperty(value = "本配置的名称  命名建议 公司_项目_模块", required = true)
     private String name;
 
-    @ApiModelProperty(required = false,hidden = true)
+    @ApiModelProperty(required = false, hidden = true)
     private String connectorJarPath;
 
     @ApiModelProperty("需要生成代码的项目,所在目录")
@@ -165,6 +183,59 @@ public class GeneratorConfig {
      */
     @ApiModelProperty("是否生成core包")
     private boolean corePackageFlag;
+
+
+    public String validateConfig() {
+        String projectFolder = this.getProjectFolder();
+        if (StringUtils.isEmpty(projectFolder)) {
+            return "项目目录不能为空";
+        }
+        if (StringUtils.isEmpty(this.getDomainObjectName())) {
+            return "类名不能为空";
+        }
+        if (StringUtils.isAnyEmpty(this.getModelPackageTargetFolder(), this.getMappingXMLTargetFolder(), this.getDaoTargetFolder())) {
+            return "包名不能为空";
+        }
+        if (!this.checkDirs()) {
+            return "选中目标目录检查,创建失败";
+        }
+        return null;
+    }
+
+    private boolean checkDirs() {
+        List<String> dirs = new ArrayList<>();
+        dirs.add(this.getProjectFolder());
+        dirs.add(FilenameUtils.normalize(this.getProjectFolder().concat("/").concat(this.getModelPackageTargetFolder())));
+        dirs.add(FilenameUtils.normalize(this.getProjectFolder().concat("/").concat(this.getDaoTargetFolder())));
+        dirs.add(FilenameUtils.normalize(this.getProjectFolder().concat("/").concat(this.getMappingXMLTargetFolder())));
+        boolean haveNotExistFolder = false;
+        for (String dir : dirs) {
+            File file = new File(dir);
+            if (!file.exists()) {
+                haveNotExistFolder = true;
+            }
+        }
+        if (haveNotExistFolder) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setContentText(FOLDER_NO_EXIST);
+            Optional<ButtonType> optional = alert.showAndWait();
+            if (optional.isPresent()) {
+                if (ButtonType.OK == optional.get()) {
+                    try {
+                        for (String dir : dirs) {
+                            FileUtils.forceMkdir(new File(dir));
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        logger.error("创建目录失败，请检查目录是否是文件而非目录", e);
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public boolean isUseTableNameAlias() {
         return useTableNameAlias;
@@ -428,5 +499,13 @@ public class GeneratorConfig {
 
     public void setCorePackageFlag(boolean corePackageFlag) {
         this.corePackageFlag = corePackageFlag;
+    }
+
+    public DatabaseConfig getSelectedDatabaseConfig() {
+        return selectedDatabaseConfig;
+    }
+
+    public void setSelectedDatabaseConfig(DatabaseConfig selectedDatabaseConfig) {
+        this.selectedDatabaseConfig = selectedDatabaseConfig;
     }
 }

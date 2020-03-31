@@ -33,7 +33,7 @@
             <Header>
                 <Menu mode="horizontal" theme="dark" active-name="1" @on-select="selectOperation">
                     <div class="layout-logo"><img src="../assets/logo.png" height="30" width="30"/></div>
-                    <div class="layout-nav">
+                    <div class="layout-nav" style="width: 520px">
                         <MenuItem name="1">
                             <Icon type="md-add-circle"/>
                             新建数据库连接
@@ -42,6 +42,11 @@
                             <Icon type="ios-paper-outline"/>
                             已保存的配置
                         </MenuItem>
+                        <MenuItem name="3">
+                            <!--<Icon type="ios-paper-outline"/>-->
+                            预览(模板+生成代码)
+                        </MenuItem>
+
                     </div>
                 </Menu>
             </Header>
@@ -140,18 +145,40 @@
                     })
             },
             getSubNavList(name) {//加载指定数据库 的所有数据表
+                if (name==null){
+                    return;
+                }
                 this.navName = name[0]
                 this.axios.get('/DBConfig/getTablesByDBConfig?dBConfigName=' + name[0])
                     .then((response) => {
-                        this.subNavList = response.data.data
+                        this.subNavList = response.data.data;
+                        this.getSelectedDB(this.navName);//将选中数据库配置事件广播出去
                     })
                     .catch((error) => {
                         this.errMsg(error)
                     })
             },
             selectMenuItem(name) {//选中数据表名称
+                if (name==null){
+                    return;
+                }
                 this.selectedTableName=name;
-                console.log(name)
+            },
+            getSelectedDB(dbName){
+                if (dbName==null){
+                    return;
+                }
+                var that=this;
+                var selectedDBConfig;
+                this.navList.forEach(function (dbConfig,index,array) {
+                    if (dbConfig.name==dbName){
+                        //将选中数据库配置事件广播出去
+                        selectedDBConfig=dbConfig;
+                        return;
+                    }
+                })
+
+                that.$eventHub.$emit("selectedDBConifg",selectedDBConfig);
             }
 
         }

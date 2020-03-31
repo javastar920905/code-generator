@@ -4,7 +4,7 @@ import cn.javabus.generator.model.DatabaseConfig;
 import cn.javabus.generator.util.ConfigHelper;
 import cn.javabus.generator.util.DbUtil;
 import cn.javabus.generator.util.Result;
-import cn.javabus.generator.util.ThreadLocalUtil;
+import cn.javabus.generator.util.ConfigCacheUtil;
 import com.jcraft.jsch.Session;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,8 +48,8 @@ public class DBConfigController {
     }
 
     private DatabaseConfig getDBConfigByName(String dBConfigName) {
-        DatabaseConfig selectedDatabaseConfig = ThreadLocalUtil.getDatabaseConfigs(dBConfigName);
-        ThreadLocalUtil.selectedDatabaseConfig=selectedDatabaseConfig;
+        DatabaseConfig selectedDatabaseConfig = ConfigCacheUtil.getDatabaseConfigs(dBConfigName);
+        ConfigCacheUtil.selectedDatabaseConfig=selectedDatabaseConfig;
         return selectedDatabaseConfig;
     }
 
@@ -166,7 +166,7 @@ public class DBConfigController {
 
         try {
             ConfigHelper.saveDatabaseConfig(databaseConfig.getUpdate(), databaseConfig.getId(), databaseConfig);
-            ThreadLocalUtil.forceLoadDatabaseConfigs();
+            ConfigCacheUtil.forceLoadDatabaseConfigs();
             return Result.ok();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -197,7 +197,7 @@ public class DBConfigController {
                 return Result.fail("数据库配置名不存在" + dbConfigByName);
             }
             ConfigHelper.deleteDatabaseConfig(dbConfigByName);
-            ThreadLocalUtil.forceLoadDatabaseConfigs();
+            ConfigCacheUtil.forceLoadDatabaseConfigs();
             return Result.ok();
         } catch (Exception e) {
             logger.error("Delete connection failed! Reason: " + e.getMessage());

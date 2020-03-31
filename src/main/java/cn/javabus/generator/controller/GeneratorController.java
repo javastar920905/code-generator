@@ -1,19 +1,16 @@
 package cn.javabus.generator.controller;
 
-import cn.javabus.generator.bridge.MybatisGeneratorBridge;
+import cn.javabus.generator.generator.MybatisGeneratorBridge;
+import cn.javabus.generator.generator.impl.MybatisNormalGenertor;
 import cn.javabus.generator.model.DatabaseConfig;
 import cn.javabus.generator.model.GeneratorConfig;
+import cn.javabus.generator.util.ConfigCacheUtil;
 import cn.javabus.generator.util.ConfigHelper;
 import cn.javabus.generator.util.DbUtil;
 import cn.javabus.generator.util.Result;
-import cn.javabus.generator.util.ThreadLocalUtil;
 import com.jcraft.jsch.Session;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.config.ColumnOverride;
 import org.mybatis.generator.config.IgnoredColumn;
@@ -21,14 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author ou.zhenxing on 2020-03-28.
- *
  */
 @Api(tags = "生成代码管理")
 @RestController
@@ -48,25 +42,29 @@ public class GeneratorController {
      */
     @ApiOperation("生成代码")
     @PostMapping("generateCode")
-    public Result generateCode(@RequestBody  GeneratorConfig config) {
+    public Result generateCode(@RequestBody GeneratorConfig config) {
         if (config == null || StringUtils.isEmpty(config.getTableName())) {
             return Result.fail("请先在左侧选择数据库表");
         }
-        String result = validateConfig(config);
+
+        String result = config.validateConfig();
         if (result != null) {
             return Result.fail(result);
         }
-        if (!checkDirs(config)) {
-            return Result.fail("选中目标目录检查,创建失败");
+
+        DatabaseConfig selectedDatabaseConfig;
+        if (config.getSelectedDatabaseConfig() != null) {
+            selectedDatabaseConfig = config.getSelectedDatabaseConfig();
+        } else {
+            selectedDatabaseConfig = ConfigCacheUtil.selectedDatabaseConfig;
         }
-        DatabaseConfig selectedDatabaseConfig= ThreadLocalUtil.selectedDatabaseConfig;
-        if (selectedDatabaseConfig==null){
+
+        if (selectedDatabaseConfig == null) {
             return Result.fail("请先选中一个数据库连接,选中要生成代码的数据表");
         }
 
-        MybatisGeneratorBridge bridge = new MybatisGeneratorBridge();
-        bridge.setGeneratorConfig(config);
-        bridge.setDatabaseConfig(selectedDatabaseConfig);
+        //创建代码生成器
+        MybatisGeneratorBridge bridge = new MybatisNormalGenertor(config);
         bridge.setIgnoredColumns(ignoredColumns);
         bridge.setColumnOverrides(columnOverrides);
         try {
@@ -74,11 +72,12 @@ public class GeneratorController {
             Session sshSession = DbUtil.getSSHSession(selectedDatabaseConfig);
             DbUtil.engagePortForwarding(sshSession, selectedDatabaseConfig);
 
+            //执行代码生成任务
             bridge.generate();
 
             return Result.ok("代码生成成功!");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             return Result.fail(e.getMessage());
         }
     }
@@ -172,53 +171,5 @@ public class GeneratorController {
 //        }
     }
 
-    private String validateConfig(GeneratorConfig config) {
-        String projectFolder = config.getProjectFolder();
-        if (StringUtils.isEmpty(projectFolder)) {
-            return "项目目录不能为空";
-        }
-        if (StringUtils.isEmpty(config.getDomainObjectName())) {
-            return "类名不能为空";
-        }
-        if (StringUtils.isAnyEmpty(config.getModelPackageTargetFolder(), config.getMappingXMLTargetFolder(), config.getDaoTargetFolder())) {
-            return "包名不能为空";
-        }
-        return null;
-    }
-
-    private boolean checkDirs(GeneratorConfig config) {
-        List<String> dirs = new ArrayList<>();
-        dirs.add(config.getProjectFolder());
-        dirs.add(FilenameUtils.normalize(config.getProjectFolder().concat("/").concat(config.getModelPackageTargetFolder())));
-        dirs.add(FilenameUtils.normalize(config.getProjectFolder().concat("/").concat(config.getDaoTargetFolder())));
-        dirs.add(FilenameUtils.normalize(config.getProjectFolder().concat("/").concat(config.getMappingXMLTargetFolder())));
-        boolean haveNotExistFolder = false;
-        for (String dir : dirs) {
-            File file = new File(dir);
-            if (!file.exists()) {
-                haveNotExistFolder = true;
-            }
-        }
-        if (haveNotExistFolder) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setContentText(FOLDER_NO_EXIST);
-            Optional<ButtonType> optional = alert.showAndWait();
-            if (optional.isPresent()) {
-                if (ButtonType.OK == optional.get()) {
-                    try {
-                        for (String dir : dirs) {
-                            FileUtils.forceMkdir(new File(dir));
-                        }
-                        return true;
-                    } catch (Exception e) {
-                        logger.error("创建目录失败，请检查目录是否是文件而非目录", e);
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
 }

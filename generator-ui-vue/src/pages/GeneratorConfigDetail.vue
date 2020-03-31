@@ -1,8 +1,8 @@
 <template>
     <div>
-        <Form ref="generateConfig" :model="generateConfig" :label-width="150">
+        <Form ref="generateConfig" :model="generateConfig" :label-width="180" style="font-weight: bold">
 
-            <FormItem>
+            <FormItem :label="generateConfig.selectedDatabaseConfig.name">
                 <Button type="primary" @click="handleSubmit('generateConfig')">代码生成</Button>
                 <Button @click="saveConfig">保存配置</Button>
                 <Button @click="handleReset('generateConfig')">打开生成文件夹</Button>
@@ -67,7 +67,7 @@
             <FormItem label="通用mapper接口包名">
                 <Input v-model="generateConfig.tkCommonMapper"></Input>
             </FormItem>
-            <FormItem label="自定义接口名称（选填）">
+            <FormItem label="自定义dao接口名称（选填）">
                 <Input v-model="generateConfig.mapperName"></Input>
             </FormItem>
             <Row>
@@ -124,6 +124,7 @@
         data() {
             return {
                 generateConfig: {
+                    selectedDatabaseConfig:{name:'请选择数据库'},//持有数据库连接
                     name: "dat",//要保存的配置名称
                     tableName: this.innerSelectedTableName,//选中的数据表名称
                     domainObjectName: "",//实体类名称
@@ -132,32 +133,32 @@
                     modelPackageTargetFolder: "src/main/java",
                     daoPackage: "cn.javabus.generator.test.dao",
                     daoTargetFolder: "src/main/java",
-                    mapperName: "LifeProductMappper",
+                    mapperName: "",//自定义dao接口名称
                     mappingXMLPackage: "cn.javabus.generator.test.xmlSqlMap",
                     mappingXMLTargetFolder: "src/main/java",
 
 
-                    offsetLimit: "false",
+                    offsetLimit: false,
                     comment: true,
                     overrideXML: true,
-                    needToStringHashcodeEquals: "false",
-                    needForUpdate: "false",
-                    annotationDAO: true,
-                    annotation: "false",
-                    useActualColumnNames: "false",
-                    useExample: "false",
+                    needToStringHashcodeEquals: false,
+                    needForUpdate: false,
+                    annotationDAO: false,
+                    annotation: false,
+                    useActualColumnNames: false,
+                    useExample: true,
                     generateKeys: "",
                     encoding: "UTF-8",
-                    useTableNameAlias: "false",
-                    useDAOExtendStyle: "false",
-                    useSchemaPrefix: "false",
-                    jsr310Support: "false",
+                    useTableNameAlias: false,
+                    useDAOExtendStyle: false,
+                    useSchemaPrefix: false,
+                    jsr310Support: false,
                     basePackage: "cn.javabus.generator",
                     controller: "cn.javabus.generator.test.ctrl",
                     service: "cn.javabus.generator.test.serve",
                     tkCommonMapper: "tk.mybatis.mapper.common.Mapper",
                     ftlTemplateFolder: "/Users/axing/Documents/java/workspace/generator/src/main/resources/generator/template",
-                    corePackageFlag: "false",
+                    corePackageFlag: false,
                 }
             }
         },
@@ -175,7 +176,18 @@
                     .catch((error) => {
                         this.errMsg(error)
                     })
-            } )
+            } );
+
+            //监听左侧导航栏 数据库选中事件
+            this.$eventHub.$on('selectedDBConifg', (dbConfig)=>{
+                 console.log('广播传过来的值是');
+                 console.log(dbConfig)
+                if (dbConfig){
+                    this.generateConfig.selectedDatabaseConfig=dbConfig;
+                }
+
+            } );
+
         },
         watch: {
             parentSelectedTableName(val){//监听父页面传递过来的值

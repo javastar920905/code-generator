@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * @author ou.zhenxing on 2020-03-28.
  */
-public class ThreadLocalUtil {
+public class ConfigCacheUtil {
     private static Map<String, DatabaseConfig> dbConfigsMap = new HashMap<>();
     //每个 request 都是一个新的线程,需要放在 session 里面
 //    public static ThreadLocal<DatabaseConfig> selectedDatabaseConfig = new ThreadLocal<>();
