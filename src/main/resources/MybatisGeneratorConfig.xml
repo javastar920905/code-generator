@@ -41,9 +41,9 @@
         <!--实体类 自动实现接口 Serializable-->
         <!--<plugin type="org.mybatis.generator.plugins.SerializablePlugin"></plugin>-->
         <!--实体类流式构建对接-->
-        <plugin type="org.mybatis.generator.plugins.FluentBuilderMethodsPlugin"></plugin>
+        <!--<plugin type="org.mybatis.generator.plugins.FluentBuilderMethodsPlugin"></plugin>-->
         <plugin type="cn.javabus.generator.plugins.DCDaoImplPlugin"></plugin>
-        <plugin type="cn.javabus.generator.plugins.DbRemarksCommentGenerator"></plugin>
+        <!--<plugin type="cn.javabus.generator.plugins.DbRemarksCommentGenerator"></plugin>-->
         <!--<plugin type="cn.javabus.generator.plugins.CommonDAOInterfacePlugin"> </plugin>-->
 
         <!-- optional，旨在创建class时，对注释进行控制 -->
@@ -55,9 +55,9 @@
 
         <!--数据库连接  -->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://10.30.0.9:3306/dcmall_uat"
-                        userId="malluat"
-                        password="malluat1234@">
+                        connectionURL="jdbc:mysql://47.93.121.11:3306/gen_test"
+                        userId="root"
+                        password="testdb">
         </jdbcConnection>
 
         <!-- java类型处理器
@@ -80,8 +80,8 @@
            targetPackage     指定生成的model生成所在的包名
            targetProject     指定在该项目下所在的路径 src/main/java,当前项目下,相对路径不能以"/"开头, 以"/"开头为磁盘根目录,需要填写绝对路径
        -->
-        <javaModelGenerator targetPackage="cn.javabus.generator.test.model"
-                            targetProject="src/main/java">
+        <javaModelGenerator targetPackage="com.eagle.life.db.model"
+                            targetProject="../dingcheng_ws/ocbp-life/life-db/src/main/java">
             <!-- 在targetPackage的基础上，根据数据库的schema再生成一层package，最终生成的类放在这个package下，默认为false -->
             <property name="enableSubPackages" value="false"/>
             <!-- 设置一个根对象，
@@ -107,8 +107,8 @@
         </javaModelGenerator>
 
         <!--xml mapper映射文件生成所在的目录 为每一个数据库的表生成对应的SqlMap文件 -->
-        <sqlMapGenerator targetPackage="cn.javabus.generator.test.sqlmap"
-                         targetProject="src/main/java">
+        <sqlMapGenerator targetPackage="com.eagle.life.db.dao.sqlmap"
+                         targetProject="../dingcheng_ws/ocbp-life/life-db/src/main/java">
             <!-- 在targetPackage的基础上，根据数据库的schema再生成一层package，最终生成的类放在这个package下，默认为false -->
             <property name="enableSubPackages" value="false"/>
         </sqlMapGenerator>
@@ -122,16 +122,16 @@
         <!--当 context 的targetRuntime="Ibatis2Java5"时,不能用 type="XMLMAPPER"-->
         <!--<javaClientGenerator type="cn.javabus.generator.util.DaoTemplate"-->
          <javaClientGenerator type="XMLMAPPER"
-                             targetPackage="cn.javabus.generator.test.dao"
-                             targetProject="src/main/java">
+                             targetPackage="com.eagle.life.db.dao"
+                             targetProject="../dingcheng_ws/ocbp-life/life-db/src/main/java">
             <!-- enableSubPackages:是否让schema作为包的后缀 -->
             <property name="enableSubPackages" value="false"/>
             <!-- 可以为所有生成的接口添加一个父接口，但是MBG只负责生成，不负责检查-->
             <!--<property name="rootInterface" value="tk.mybatis.mapper.common.Mapper"></property>-->
         </javaClientGenerator>
 
-        <!--对应数据库表 生成以后需要完善BaseMapper中的泛型信息-->
-        <table schema="mysql" tableName="life_product" domainObjectName="lifeProduct"
+        <!--对应数据库表 生成以后需要完善BaseMapper中的泛型信息  mapperName 修改 DAO 接口名称,Dao会自动驼峰命名-->
+        <table schema="mysql" tableName="life_product" domainObjectName="LifeProduct"  mapperName="LifeProductDao"
                enableCountByExample="true"
                enableUpdateByExample="true"
                enableDeleteByExample="true"
@@ -142,7 +142,7 @@
             <property name="useActualColumnNames" value="false"/>
             <!-- 还可以对表中的字段进行类型转换 -->
             <!-- 这里转换的原因是会自动将个位的int值自动转化为Boolean，所以指定为Integer -->
-            <columnOverride column="sex" javaType="Integer"/>
+            <!--<columnOverride column="sex" javaType="Integer"/>-->
             <!--<generatedKey column="ID" sqlStatement="DB2" identity="true" />-->
             <!--<ignoreColumn column="FRED" />-->
         </table>
