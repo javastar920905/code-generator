@@ -6,6 +6,7 @@ import cn.javabus.generator.model.DbType;
 import cn.javabus.generator.model.GeneratorConfig;
 import cn.javabus.generator.util.ConfigHelper;
 import cn.javabus.generator.util.DbUtil;
+import cn.javabus.generator.util.FileOverWriteUtil;
 import com.google.common.base.CaseFormat;
 import freemarker.template.TemplateExceptionHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -412,29 +413,9 @@ public class MybatisCodeGenerator extends MybatisGeneratorBridge {
                 }
             }
         }
-        write(fileName, buf.toString());
+        FileOverWriteUtil.write(fileName, buf.toString());
     }
 
-    public static void write(String filePath, String content) {
-        BufferedWriter bw = null;
 
-        try {
-            // 根据文件路径创建缓冲输出流
-            bw = new BufferedWriter(new FileWriter(filePath));
-            // 将内容写入文件中
-            bw.write(content);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            // 关闭流
-            if (bw != null) {
-                try {
-                    bw.close();
-                } catch (IOException e) {
-                    bw = null;
-                }
-            }
-        }
-    }
 
 }

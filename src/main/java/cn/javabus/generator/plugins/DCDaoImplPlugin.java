@@ -1,6 +1,5 @@
 package cn.javabus.generator.plugins;
 
-import cn.javabus.generator.generator.impl.MybatisCodeGenerator;
 import org.mybatis.generator.api.*;
 import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.config.JavaClientGeneratorConfiguration;
@@ -8,10 +7,7 @@ import org.mybatis.generator.config.JavaModelGeneratorConfiguration;
 import org.mybatis.generator.exception.ShellException;
 import org.mybatis.generator.internal.DefaultShellCallback;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -219,50 +215,9 @@ public class DCDaoImplPlugin extends PluginAdapter {
             }
         }
     }
-
+    //记录生成dao 文件的地址,用于强制重写
     public static String  daoFielPath=null;
-    public static void deleteAnnotation(String fileName) {
-        if (fileName==null){
-            return;
-        }
-        System.out.println("开始自定义生成Dao文件: " + fileName);
-        BufferedReader br = null;
-        String line = null;
-        StringBuffer buf = new StringBuffer();
 
-        try {
-            // 根据文件路径创建缓冲输入流
-            br = new BufferedReader(new FileReader(fileName));
-
-            // 循环读取文件的每一行, 对需要修改的行进行修改, 放入缓冲对象中
-            int publicCount = 0;
-            while ((line = br.readLine()) != null) {
-                if (line.contains("import org.apache.ibatis.annotations.Param")) {
-                    continue;//丢弃@Id
-                }
-                if (line.contains("@Param(\"record\")") || line.contains("@Param(\"example\")")) {
-                    // 丢弃@Column注解和导入包
-                    buf.append(line.replace("@Param(\"record\")", "")
-                            .replace("@Param(\"example\")", "")).append("\r\n");
-                } else {
-                    // 如果不用修改, 则按原来的内容回写
-                    buf.append(line).append("\r\n");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            // 关闭流
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    br = null;
-                }
-            }
-        }
-        MybatisCodeGenerator.write(fileName, buf.toString());
-    }
 
 
     /**

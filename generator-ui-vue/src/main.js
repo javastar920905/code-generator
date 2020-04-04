@@ -47,6 +47,9 @@ Vue.prototype.msg = function (response) {
 Vue.prototype.errMsg = function (error) {
     this.$Message.error(error.message)
 };
+Vue.prototype.infoMsg = function (msg) {
+    this.$Message.info(msg)
+};
 Vue.prototype.okMsg = function (msg) {
     this.$Message.success(msg)
 };

@@ -1,6 +1,7 @@
 package cn.javabus.generator.mgb;
 
 import cn.javabus.generator.plugins.DCDaoImplPlugin;
+import cn.javabus.generator.util.FileOverWriteUtil;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.config.Configuration;
 import org.mybatis.generator.config.xml.ConfigurationParser;
@@ -36,7 +37,7 @@ public class RunGenerator {
             myBatisGenerator.generate(null);
 
             //Thread.sleep(2000);
-            DCDaoImplPlugin.deleteAnnotation(DCDaoImplPlugin.daoFielPath);
+            FileOverWriteUtil.delParamAnnotation(DCDaoImplPlugin.daoFielPath);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (XMLParserException e) {

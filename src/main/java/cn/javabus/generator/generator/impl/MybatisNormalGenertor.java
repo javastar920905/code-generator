@@ -6,6 +6,7 @@ import cn.javabus.generator.model.GeneratorConfig;
 import cn.javabus.generator.plugins.DbRemarksCommentGenerator;
 import cn.javabus.generator.util.ConfigHelper;
 import cn.javabus.generator.util.DbUtil;
+import cn.javabus.generator.util.FileOverWriteUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.api.ShellCallback;
@@ -96,6 +97,21 @@ public class MybatisNormalGenertor extends MybatisGeneratorBridge {
         configuration.addClasspathEntry(connectorLibPath);
         MyBatisGenerator myBatisGenerator = new MyBatisGenerator(configuration, shellCallback, warnings);
         myBatisGenerator.generate(progressCallback, contexts, fullyqualifiedTables);
+
+
+        doDelAnnotation();
+    }
+
+    private void doDelAnnotation() {
+        String daoPath = generatorConfig.getProjectFolder() + "/" + generatorConfig.getDaoTargetFolder() + "/";
+        daoPath = daoPath + generatorConfig.getDaoPackage().replace(".", "/") + "/";
+        if (StringUtils.isNotEmpty(generatorConfig.getMapperName())) {
+            daoPath = daoPath + generatorConfig.getMapperName() + ".java";
+        } else {
+            daoPath = daoPath + generatorConfig.getDomainObjectName() + "Mapper.java";
+        }
+        System.out.println("删除Dao 接口 @Param 注解: " + daoPath);
+        FileOverWriteUtil.delParamAnnotation(daoPath);
     }
 
     /**
