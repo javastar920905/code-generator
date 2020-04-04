@@ -10,7 +10,7 @@
     .layout-logo {
         width: 100px;
         height: 30px;
-        background: #5b6270;
+        /*background: #5b6270;*/
         border-radius: 3px;
         float: left;
         position: relative;
@@ -32,7 +32,7 @@
         <Layout>
             <Header>
                 <Menu mode="horizontal" theme="dark" active-name="1" @on-select="selectOperation">
-                    <div class="layout-logo"><img src="../assets/logo.png" height="30" width="30"/></div>
+                    <div class="layout-logo"><img src="../assets/logo.png" width="100" style="margin-top: -35px"/></div>
                     <div class="layout-nav" style="width: 520px">
                         <MenuItem name="1">
                             <Icon type="md-add-circle"/>

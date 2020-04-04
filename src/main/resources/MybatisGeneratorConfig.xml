@@ -55,9 +55,9 @@
 
         <!--数据库连接  -->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://10.30.0.9:3306/dcmall_uat"
-                        userId="malluat"
-                        password="malluat1234@">
+                        connectionURL="jdbc:mysql://47.93.121.11:3306/gen_test"
+                        userId="root"
+                        password="testdb">
         </jdbcConnection>
 
         <!-- java类型处理器

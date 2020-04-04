@@ -24,12 +24,12 @@ public class MainTest {
         DatabaseConfig config = new DatabaseConfig();
         config.setName("db_test" + Math.random());
         config.setDbType("MySQL");
-        config.setHost("10.30.0.9");
+        config.setHost("47.93.121.11");
         config.setPort("3306");
-        config.setUsername("malluat");
-        config.setPassword("malluat1234@");
+        config.setUsername("root");
+        config.setPassword("testdb");
         config.setEncoding("utf8");
-        config.setSchema("dcmall_uat");
+        config.setSchema("gen_test");
 
         try {
             ConfigHelper.saveDatabaseConfig(false, null, config);
