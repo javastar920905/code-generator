@@ -6,9 +6,22 @@ package cn.javabus.generator.util;
 public class MyStringUtils {
 
     /**
+     * 首字母大写
+     * @param name
+     * @return
+     */
+    public static String upperFirstWord(String name) {
+        char[] cs = name.toCharArray();
+        cs[0] -= 32;
+        return String.valueOf(cs);
+//        name = name.substring(0, 1).toUpperCase() + name.substring(1);
+//        return name;
+    }
+
+    /**
      *
      * convert string from slash style to camel style, such as my_course will convert to MyCourse
-     *
+     * 下划线转 pascal
      * @param str
      * @return
      */

@@ -1,5 +1,6 @@
 package cn.javabus.generator.plugins;
 
+import cn.javabus.generator.util.MyStringUtils;
 import org.mybatis.generator.api.*;
 import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.config.JavaClientGeneratorConfiguration;
@@ -20,9 +21,9 @@ import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
  * 生成鼎城项目的 dao 实现类(这个插件是为了兼容项目中的 ibatis 写的)
  */
 public class DCDaoImplPlugin extends PluginAdapter {
-    final String suffix_Dao = "DAO";
-    final String suffix_DaoImpl = "DAOImpl";
-    final String BaseDaoImplFullPath = "com.eagle.life.db.base.dao.LifeBaseDaoImpl";
+    static  final String suffix_Dao = "DAO";
+    static final String suffix_DaoImpl = "DAOImpl";
+    static final String BaseDaoImplFullPath = "com.eagle.life.db.base.dao.LifeBaseDaoImpl";
     //final String BaseDaoImplFullPath = "cn.javabus.generator.test.LifeBaseDaoImpl";
     private static final FullyQualifiedJavaType PARAM_ANNOTATION_TYPE = new FullyQualifiedJavaType("org.apache.ibatis.annotations.Param");
     private static final FullyQualifiedJavaType LIST_TYPE = FullyQualifiedJavaType.getNewListInstance();
@@ -39,6 +40,12 @@ public class DCDaoImplPlugin extends PluginAdapter {
 
     private boolean isUseExample() {
         return "true".equals(getProperties().getProperty("useExample"));
+    }
+
+    private  static  String getModuleName(String daoPackage){
+        int idx=daoPackage.indexOf(".db.");
+        String temp= daoPackage.substring(0,idx);
+        return  temp.replace("com.eagle.","");
     }
 
 
@@ -128,6 +135,11 @@ public class DCDaoImplPlugin extends PluginAdapter {
 
         String daoImplName = domainName + suffix_DaoImpl;
         String fullDaoImpleName = daoTargetPackage + ".impl." + daoImplName;
+
+
+        //com.eagle.life.db.base.dao.LifeBaseDaoImpl  (LifeBaseDaoImpl 根据模块动态改变)
+        String moduleName=getModuleName(daoTargetPackage);
+       String BaseDaoImplFullPath="com.eagle."+moduleName+".db.base.dao."+MyStringUtils.upperFirstWord(moduleName)+"BaseDaoImpl";
         //1 创建类 包名+实体类+DAOImpl
         //声明父接口类  Interface mapperInterface = new Interface(daoTargetPackage + domainName + suffix_DaoImpl);
         TopLevelClass clazz = new TopLevelClass(fullDaoImpleName);
@@ -355,7 +367,7 @@ public class DCDaoImplPlugin extends PluginAdapter {
         Method methodImpl = buildNewMethodImpl(method);
         List<Parameter> parameters = method.getParameters();
         String keyName = parameters.get(0).getName();
-        String keySetMethodName = "set" + upperFirstWord(keyName);//setId 首字母大写
+        String keySetMethodName = "set" + MyStringUtils.upperFirstWord(keyName);//setId 首字母大写
 
         methodImpl.setReturnType(new FullyQualifiedJavaType("int"));
         method.setReturnType(new FullyQualifiedJavaType("int"));
@@ -368,13 +380,7 @@ public class DCDaoImplPlugin extends PluginAdapter {
     }
 
 
-    private String upperFirstWord(String name) {//首字母大写
-        char[] cs = name.toCharArray();
-        cs[0] -= 32;
-        return String.valueOf(cs);
-//        name = name.substring(0, 1).toUpperCase() + name.substring(1);
-//        return name;
-    }
+
 
     @Override
     public boolean clientInsertMethodGenerated(Method method, Interface interfaze, IntrospectedTable introspectedTable) {
@@ -435,7 +441,7 @@ public class DCDaoImplPlugin extends PluginAdapter {
         Method methodImpl = buildNewMethodImpl(method);
         List<Parameter> parameters = method.getParameters();
         String keyName = parameters.get(0).getName();
-        String keySetMethodName = "set" + upperFirstWord(keyName);//setId 首字母大写
+        String keySetMethodName = "set" + MyStringUtils.upperFirstWord(keyName);//setId 首字母大写
 
 
         methodImpl.setReturnType(new FullyQualifiedJavaType(domainName));
